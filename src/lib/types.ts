@@ -20,7 +20,27 @@ export const STATUSES = [
   "N/A",
 ] as const;
 
-export const OWNERS = ["Kiel", "Amanda", "Abby", "Trainer", "Vendor", "Agency", "TBD"] as const;
+/**
+ * Everyone who can be assigned a deliverable. The first block is the team, in
+ * the order they appear in the owner dropdowns; the rest are placeholders for
+ * work that sits outside it.
+ *
+ * Drives the owner pickers and the /tasks filter. Plain text in the database
+ * with no check constraint, so adding a name here needs no migration — but a
+ * name removed here stays on any deliverable already assigned to it.
+ */
+export const OWNERS = [
+  "Kiel", // Owner
+  "Amanda", // Owner
+  "Charley", // Studio Manager
+  "Stephanie", // Social Media Manager
+  "Abby", // PR Manager
+  "Isabel", // Events Manager
+  "Trainer",
+  "Vendor",
+  "Agency",
+  "TBD",
+] as const;
 
 export const INSTRUCTOR_ROLES = [
   "Lead Instructor",

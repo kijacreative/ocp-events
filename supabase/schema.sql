@@ -94,22 +94,25 @@ create trigger events_touch before update on events
   for each row execute function touch_updated_at();
 
 -- ============================================================
--- Access: anyone with the link can read and write.
--- RLS stays ON so you can tighten this later without a rebuild.
+-- Access: signed-in users only.
+--
+-- Accounts are created by invitation (Authentication > Users > Invite),
+-- and the app never signs anyone up. The publishable key alone gets you
+-- nothing, which matters because it ships in the browser bundle.
 -- ============================================================
 alter table events       enable row level security;
 alter table event_staff  enable row level security;
 alter table deliverables enable row level security;
 
-create policy "open access" on events
-  for all to anon, authenticated using (true) with check (true);
-create policy "open access" on event_staff
-  for all to anon, authenticated using (true) with check (true);
-create policy "open access" on deliverables
-  for all to anon, authenticated using (true) with check (true);
+create policy "team access" on events
+  for all to authenticated using (true) with check (true);
+create policy "team access" on event_staff
+  for all to authenticated using (true) with check (true);
+create policy "team access" on deliverables
+  for all to authenticated using (true) with check (true);
 
 grant usage on schema public to anon, authenticated;
-grant all on all tables in schema public to anon, authenticated;
+grant all on all tables in schema public to authenticated;
 
 -- ============================================================
 -- Optional: an example event so the dashboard isn't empty.

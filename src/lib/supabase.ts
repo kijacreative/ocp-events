@@ -23,7 +23,14 @@ export function getSupabase(): SupabaseClient | null {
   if (!isConfigured) return null;
   if (!client) {
     client = createClient(url as string, key as string, {
-      auth: { persistSession: false },
+      auth: {
+        // Sessions live in localStorage. Every page here is a client component
+        // and nothing is fetched on the server, so there are no cookies to
+        // synchronise and no middleware to run.
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
     });
   }
   return client;

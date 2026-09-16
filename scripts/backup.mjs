@@ -34,16 +34,35 @@ function loadEnv() {
 loadEnv();
 
 const URL_BASE = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+/**
+ * Prefers the service role key. Once 002-require-auth.sql has run, the
+ * publishable key is bound to a signed-in user and a script has no session —
+ * it would back up nothing at all and say it succeeded. The service role key
+ * bypasses RLS, which is exactly what a backup needs and exactly why it must
+ * never carry the NEXT_PUBLIC_ prefix or leave .env.local.
+ */
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const KEY =
+  SERVICE_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!URL_BASE || !KEY) {
   console.error(
-    "Missing NEXT_PUBLIC_SUPABASE_URL or the publishable key.\n" +
+    "Missing NEXT_PUBLIC_SUPABASE_URL or a key.\n" +
       "Set them in .env.local or the environment."
   );
   process.exit(1);
+}
+
+if (!SERVICE_KEY) {
+  console.warn(
+    "Warning: no SUPABASE_SERVICE_ROLE_KEY set, falling back to the publishable key.\n" +
+      "That works only while the database still allows anonymous reads. After\n" +
+      "002-require-auth.sql runs it will quietly return nothing.\n" +
+      "Add the service_role key from Project Settings > API Keys to .env.local.\n"
+  );
 }
 
 const headers = { apikey: KEY, Authorization: `Bearer ${KEY}` };

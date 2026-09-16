@@ -67,7 +67,6 @@ git push -u origin main
    |---|---|
    | `NEXT_PUBLIC_SUPABASE_URL` | your project URL |
    | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | your publishable key |
-   | `NEXT_PUBLIC_APP_PASSCODE` | optional — see below |
 
 3. Deploy. You'll get a URL like `ocp-events.vercel.app`. Add a custom domain under
    **Settings → Domains** if you want something like `events.oakcliffpilates.com`.
@@ -85,24 +84,45 @@ npm run dev                  # http://localhost:3000
 
 ---
 
-## A note on access
+## Who can get in
 
-You asked for open editing, so the database policies allow anyone to read and write. Worth
-knowing exactly what that means: the anon key ships inside the page, which is normal and by
-design, but combined with open write policies it means anyone who has the URL — or finds it in a
-forwarded text, a screenshot, or a browser history — can edit or delete any event.
+Access is by invitation. The app signs nobody up: it emails a one-time link to an address that
+already has an account, and does nothing at all for one that doesn't. The publishable key on its
+own opens nothing, which matters because it ships in the browser bundle where anyone can read it.
 
-Two ways to tighten it without changing the architecture:
+### Setting it up — order matters
 
-**Shared passcode.** Set `NEXT_PUBLIC_APP_PASSCODE` to anything (`ocp2026`) and the app asks for
-it once per device. This stops casual access, not a determined person — the passcode is in the
-JavaScript. Good enough for keeping a forwarded link from becoming a problem.
+Tightening the database before the accounts exist locks everyone out, including you.
 
-**Real accounts.** Turn on Supabase Auth (email magic links work well for a team this size) and
-change the three policies in `schema.sql` from `to anon, authenticated` to `to authenticated`.
-Then only people you've invited can touch anything. Worth doing if trainers get access.
+1. **Invite the team.** Supabase → **Authentication → Users → Invite user**, one address each:
 
-Either way, keep backups. See below — on the free plan there is no safety net otherwise.
+   | | |
+   |---|---|
+   | Kiel | Owner |
+   | Amanda | Owner |
+   | Charley | Studio Manager |
+   | Stephanie | Social Media Manager |
+   | Abby | PR Manager |
+   | Isabel | Events Manager |
+
+   Everyone signed in is a peer — all six see and edit every event.
+
+2. **Turn off public signups.** Authentication → Providers → Email, and disable *Enable signups*.
+   Belt and braces: the app already passes `shouldCreateUser: false`, but this closes the door at
+   the database too.
+
+3. **Add the site URL.** Authentication → URL Configuration → Site URL, set to your Vercel domain.
+   Magic links redirect there, so a wrong value sends people to localhost.
+
+4. **Run the migration.** Paste `supabase/002-require-auth.sql` into the SQL Editor and run it.
+   This is the step that actually revokes anonymous access. Do it last.
+
+### Adding or removing someone
+
+Invite them under Authentication → Users, and add their first name to `OWNERS` in
+`src/lib/types.ts` so they show up in the owner dropdowns. Removing is the reverse — delete the
+user to cut off access. Taking a name out of `OWNERS` only hides it from the pickers; deliverables
+already assigned to that person keep showing it.
 
 ---
 
@@ -116,9 +136,14 @@ dashboard), starting around $100/month. We're staying on free, so backups are a 
 npm run backup
 ```
 
-Dumps all three tables to timestamped JSON over the REST API. It needs only the publishable key
-the app already uses — no database password, no CLI login. The newest 30 dumps are kept and older
-ones pruned; override with `OCP_BACKUP_KEEP`.
+Dumps all three tables to timestamped JSON over the REST API. No database password, no CLI login.
+The newest 30 dumps are kept and older ones pruned; override with `OCP_BACKUP_KEEP`.
+
+Add `SUPABASE_SERVICE_ROLE_KEY` to `.env.local` (Project Settings → API Keys → service_role).
+Once access is restricted to signed-in users, the publishable key belongs to a person and a
+script has no session, so a backup run with it would return nothing and report success. The
+service role key bypasses row-level security, which is what a backup wants — and why it has no
+`NEXT_PUBLIC_` prefix and must never be committed. The script warns loudly if it's missing.
 
 **Where the dumps go.** By default `./backups`, which is gitignored. A backup that lives on the
 same laptop as nothing else isn't much of a backup, and these files hold staff pay rates and

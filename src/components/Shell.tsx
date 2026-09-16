@@ -2,73 +2,85 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { isConfigured } from "@/lib/supabase";
+import { useAuth } from "@/lib/useAuth";
 
-const PASSCODE = process.env.NEXT_PUBLIC_APP_PASSCODE || "";
-const STORAGE_KEY = "ocp-events-unlocked";
+function SignIn({ sendLink }: { sendLink: (email: string) => Promise<string | null> }) {
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
 
-export default function Shell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const [unlocked, setUnlocked] = useState(!PASSCODE);
-  const [ready, setReady] = useState(!PASSCODE);
-  const [entry, setEntry] = useState("");
-  const [wrong, setWrong] = useState(false);
+  async function submit() {
+    if (!email.trim() || busy) return;
+    setBusy(true);
+    setError("");
+    const problem = await sendLink(email);
+    setBusy(false);
+    if (problem) setError(problem);
+    else setSent(true);
+  }
 
-  useEffect(() => {
-    if (!PASSCODE) return;
-    setUnlocked(window.localStorage.getItem(STORAGE_KEY) === PASSCODE);
-    setReady(true);
-  }, []);
-
-  if (!ready) return null;
-
-  if (!unlocked) {
+  if (sent) {
     return (
-      <main className="mx-auto max-w-[380px] px-6 pt-[22vh]">
-        <h1 className="display text-[42px]">Oak Cliff Pilates</h1>
-        <p className="mt-2 text-[14px] text-ink-70">
-          Enter the team passcode to open the call sheet.
+      <main className="mx-auto max-w-[420px] px-6 pt-[22vh]">
+        <h1 className="display text-[42px]">Check your email</h1>
+        <p className="mt-3 text-[14.5px] text-ink-70">
+          A sign-in link is on its way to <strong className="font-semibold">{email}</strong>. It
+          works once and expires in an hour.
         </p>
-        <div className="mt-6 flex gap-2">
-          <input
-            className="input"
-            type="password"
-            value={entry}
-            autoFocus
-            placeholder="Passcode"
-            onChange={(e) => {
-              setEntry(e.target.value);
-              setWrong(false);
-            }}
-            onKeyDown={(e) => {
-              if (e.key !== "Enter") return;
-              if (entry === PASSCODE) {
-                window.localStorage.setItem(STORAGE_KEY, entry);
-                setUnlocked(true);
-              } else setWrong(true);
-            }}
-          />
-          <button
-            className="btn btn-solid"
-            onClick={() => {
-              if (entry === PASSCODE) {
-                window.localStorage.setItem(STORAGE_KEY, entry);
-                setUnlocked(true);
-              } else setWrong(true);
-            }}
-          >
-            Open
-          </button>
-        </div>
-        {wrong ? (
-          <p className="mt-3 text-[13px] font-semibold text-flare">
-            That passcode doesn&apos;t match. Ask Kiel or Amanda for the current one.
-          </p>
-        ) : null}
+        <button
+          className="btn btn-quiet mt-6"
+          onClick={() => {
+            setSent(false);
+            setError("");
+          }}
+        >
+          Use a different address
+        </button>
       </main>
     );
   }
+
+  return (
+    <main className="mx-auto max-w-[420px] px-6 pt-[22vh]">
+      <h1 className="display text-[42px]">Oak Cliff Pilates</h1>
+      <p className="mt-2 text-[14.5px] text-ink-70">
+        Sign in with your work email and we&apos;ll send you a link. No password to remember.
+      </p>
+      <div className="mt-6 flex gap-2">
+        <input
+          className="input"
+          type="email"
+          value={email}
+          autoFocus
+          placeholder="you@oakcliffpilates.com"
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setError("");
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") submit();
+          }}
+        />
+        <button className="btn btn-solid" disabled={busy} onClick={submit}>
+          {busy ? "Sending…" : "Send link"}
+        </button>
+      </div>
+      {error ? <p className="mt-3 text-[13px] font-semibold text-flare">{error}</p> : null}
+    </main>
+  );
+}
+
+export default function Shell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const { state, email, sendLink, signOut } = useAuth();
+
+  if (state === "checking") return null;
+
+  // Without keys there is nothing to sign in to; let the page explain itself.
+  if (state === "signed-out") return <SignIn sendLink={sendLink} />;
 
   const nav = [
     { href: "/", label: "Call sheet" },
@@ -100,9 +112,20 @@ export default function Shell({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
-          <Link href="/events/new" className="btn btn-solid ml-auto !px-3 !py-1.5 !text-[13px]">
-            New event
-          </Link>
+          <div className="ml-auto flex items-center gap-3">
+            <Link href="/events/new" className="btn btn-solid !px-3 !py-1.5 !text-[13px]">
+              New event
+            </Link>
+            {email ? (
+              <button
+                onClick={signOut}
+                title={email}
+                className="text-[13px] font-semibold text-ink-45 hover:text-ink"
+              >
+                Sign out
+              </button>
+            ) : null}
+          </div>
         </div>
       </header>
 
@@ -111,8 +134,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           <div className="mx-auto max-w-[1140px] px-5 py-3 text-[13.5px] text-warn sm:px-8">
             <strong className="font-bold">Not connected to the database.</strong> Add
             NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in Vercel, then
-            redeploy.
-            Setup steps are in the project README.
+            redeploy. Setup steps are in the project README.
           </div>
         </div>
       ) : null}
