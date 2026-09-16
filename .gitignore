@@ -6,3 +6,6 @@ out
 .DS_Store
 *.tsbuildinfo
 next-env.d.ts
+
+# Local data dumps — these hold pay rates and revenue. Never commit them.
+/backups

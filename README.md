@@ -102,8 +102,44 @@ JavaScript. Good enough for keeping a forwarded link from becoming a problem.
 change the three policies in `schema.sql` from `to anon, authenticated` to `to authenticated`.
 Then only people you've invited can touch anything. Worth doing if trainers get access.
 
-Either way, turn on **Point-in-Time Recovery** in Supabase (Settings → Database) so an accidental
-delete is recoverable.
+Either way, keep backups. See below — on the free plan there is no safety net otherwise.
+
+---
+
+## Backups
+
+Free Supabase projects get **no automatic backups at all**. Daily backups start on the Pro plan,
+and Point-in-Time Recovery is a paid add-on on top of that (Database → Backups → PITR in the
+dashboard), starting around $100/month. We're staying on free, so backups are a script.
+
+```bash
+npm run backup
+```
+
+Dumps all three tables to timestamped JSON over the REST API. It needs only the publishable key
+the app already uses — no database password, no CLI login. The newest 30 dumps are kept and older
+ones pruned; override with `OCP_BACKUP_KEEP`.
+
+**Where the dumps go.** By default `./backups`, which is gitignored. A backup that lives on the
+same laptop as nothing else isn't much of a backup, and these files hold staff pay rates and
+revenue — so point them somewhere private and off-machine:
+
+```bash
+export OCP_BACKUP_DIR="$HOME/Dropbox/OCP/event-backups"
+npm run backup
+```
+
+Never put dumps in this repo or in a GitHub Actions artifact. The repo is public, and so are
+artifacts built from one.
+
+**Restoring.** Rows are matched by id and overwritten, so a restore undoes edits and brings back
+deleted rows without duplicating anything that's still there:
+
+```bash
+npm run restore -- backups/ocp-events-2026-09-16-1447.json --yes
+```
+
+It refuses to run without `--yes`.
 
 ---
 
