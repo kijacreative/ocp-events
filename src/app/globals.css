@@ -1,0 +1,253 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Oak Cliff Pilates — call sheet
+   True black on true white. One signal red, spent only on
+   urgency and the primary action. Poster type for the numbers
+   that matter; a plain grotesque for everything you read.
+   ============================================================ */
+
+@theme {
+  --color-paper: #ffffff;
+  --color-ash: #f3f3f1;
+  --color-rule: #dcdcd6;
+  --color-ink: #000000;
+  --color-ink-70: #4a4a48;
+  --color-ink-45: #86867f;
+  --color-flare: #e01b1b;
+  --color-flare-wash: #fdeceb;
+  --color-ok: #15703f;
+  --color-ok-wash: #e8f3ec;
+  --color-warn: #a86400;
+  --color-warn-wash: #fbf1de;
+
+  --font-display: "Anton", "Arial Narrow", sans-serif;
+  --font-sans: "Archivo", system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Poster type: tight, big, never used for anything you'd read in a paragraph */
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 0.88;
+  text-transform: none;
+}
+
+.numeral {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  line-height: 0.82;
+  letter-spacing: -0.02em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ---------- form controls ---------------------------------- */
+.input,
+.select,
+.area {
+  width: 100%;
+  background: var(--color-paper);
+  border: 1px solid var(--color-rule);
+  border-radius: 0;
+  padding: 9px 11px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  color: var(--color-ink);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.area {
+  min-height: 74px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--color-ink) 50%),
+    linear-gradient(135deg, var(--color-ink) 50%, transparent 50%);
+  background-position: calc(100% - 15px) 50%, calc(100% - 10px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 30px;
+  cursor: pointer;
+}
+
+.input:hover,
+.select:hover,
+.area:hover {
+  border-color: var(--color-ink-45);
+}
+
+.input:focus,
+.select:focus,
+.area:focus,
+.check:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 1px;
+  border-color: var(--color-ink);
+}
+
+.input-bare {
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  padding: 5px 4px;
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--color-ink);
+}
+
+.input-bare:hover {
+  border-bottom-color: var(--color-rule);
+}
+
+.input-bare:focus {
+  outline: none;
+  border-bottom-color: var(--color-ink);
+  background: var(--color-ash);
+}
+
+/* ---------- checkbox --------------------------------------- */
+.check {
+  appearance: none;
+  width: 21px;
+  height: 21px;
+  border: 1.5px solid var(--color-ink);
+  border-radius: 0;
+  background: var(--color-paper);
+  cursor: pointer;
+  position: relative;
+  flex: none;
+  transition: background 100ms ease;
+}
+
+.check:checked {
+  background: var(--color-ink);
+}
+
+.check:checked::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 7px;
+  height: 12px;
+  border: solid var(--color-paper);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* ---------- buttons ---------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1.5px solid var(--color-ink);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  border-radius: 0;
+  padding: 9px 16px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.btn:hover {
+  background: var(--color-ash);
+}
+
+.btn-solid {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+.btn-solid:hover {
+  background: var(--color-flare);
+  border-color: var(--color-flare);
+  color: var(--color-paper);
+}
+
+.btn-quiet {
+  border-color: transparent;
+  padding: 6px 8px;
+  font-weight: 500;
+  color: var(--color-ink-70);
+}
+
+.btn-quiet:hover {
+  color: var(--color-flare);
+  background: transparent;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- tags ------------------------------------------- */
+.tag {
+  display: inline-block;
+  border-radius: 2px;
+  padding: 3px 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* ---------- data rows -------------------------------------- */
+.row-grid {
+  border-top: 1px solid var(--color-rule);
+}
+
+.row-grid:hover {
+  background: var(--color-ash);
+}
+
+.rule {
+  border: 0;
+  border-top: 1px solid var(--color-rule);
+  margin: 0;
+}
+
+.rule-heavy {
+  border: 0;
+  border-top: 2px solid var(--color-ink);
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
