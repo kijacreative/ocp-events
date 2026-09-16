@@ -110,7 +110,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         <div className="border-b border-rule bg-warn-wash">
           <div className="mx-auto max-w-[1140px] px-5 py-3 text-[13.5px] text-warn sm:px-8">
             <strong className="font-bold">Not connected to the database.</strong> Add
-            NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in Vercel, then redeploy.
+            NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in Vercel, then
+            redeploy.
             Setup steps are in the project README.
           </div>
         </div>

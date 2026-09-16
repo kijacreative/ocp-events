@@ -35,7 +35,10 @@ date. Past events show attendance, revenue, leads and conversions instead of pro
    click **Run**. This creates three tables, sets up access, and inserts one example event.
 4. Open **Project Settings → API** and copy two values:
    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
-   - **anon public** key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - **publishable** key (`sb_publishable_…`) → `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+
+   Older projects show an **anon public** JWT instead of a publishable key. That works too —
+   set it as `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 
 ### 2. Put the code on GitHub
 
@@ -63,7 +66,7 @@ git push -u origin main
    | Name | Value |
    |---|---|
    | `NEXT_PUBLIC_SUPABASE_URL` | your project URL |
-   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | your anon public key |
+   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | your publishable key |
    | `NEXT_PUBLIC_APP_PASSCODE` | optional — see below |
 
 3. Deploy. You'll get a URL like `ocp-events.vercel.app`. Add a custom domain under
