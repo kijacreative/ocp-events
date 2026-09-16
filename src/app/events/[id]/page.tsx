@@ -8,6 +8,7 @@ import { useEvent } from "@/lib/useData";
 import {
   DATE_STATUSES,
   EVENT_TYPES,
+  FORMATS,
   type DeliverableRow,
   type EventRow,
   type StaffRow,
@@ -147,6 +148,14 @@ export default function EventPage() {
               value={event.event_type}
               options={EVENT_TYPES}
               onChange={(v) => patchEvent({ event_type: v as EventRow["event_type"] })}
+            />
+          </Field>
+          <Field label="Class format" hint="What actually happens — separate from the event type.">
+            <Select
+              value={event.format}
+              options={FORMATS}
+              allowBlank
+              onChange={(v) => patchEvent({ format: v })}
             />
           </Field>
           <Field label="Location">

@@ -1,4 +1,5 @@
 export const EVENT_TYPES = [
+  "Partner Event",
   "Private Party",
   "Pop-Up",
   "Community Event",
@@ -60,6 +61,17 @@ export const HELPER_ROLES = [
   "Other",
 ] as const;
 
+/** What actually happens at the event — tracked separately from event type. */
+export const FORMATS = [
+  "Reformer Class",
+  "Mat Class",
+  "Pilates in the Park",
+  "Pop-Up",
+  "Community Event",
+  "Workshop",
+  "Other",
+] as const;
+
 export type EventType = (typeof EVENT_TYPES)[number];
 export type DateStatus = (typeof DATE_STATUSES)[number];
 export type DeliverableStatus = (typeof STATUSES)[number];
@@ -68,6 +80,7 @@ export type EventRow = {
   id: string;
   name: string;
   event_type: EventType;
+  format: string | null;
   location: string | null;
   event_date: string | null;
   date_status: DateStatus;

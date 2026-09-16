@@ -33,6 +33,7 @@ date. Past events show attendance, revenue, leads and conversions instead of pro
 2. Wait for it to finish provisioning (a minute or two).
 3. Open **SQL Editor → New query**, paste the entire contents of `supabase/schema.sql`, and
    click **Run**. This creates three tables, sets up access, and inserts one example event.
+   Then run `supabase/003-seed-events.sql` to replace that example with the 20 real events.
 4. Open **Project Settings → API** and copy two values:
    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
    - **publishable** key (`sb_publishable_…`) → `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
@@ -83,6 +84,18 @@ npm run dev                  # http://localhost:3000
 ```
 
 ---
+
+## The SQL files
+
+Run them in order. Each is safe to re-run except where noted.
+
+| File | What it does |
+|---|---|
+| `schema.sql` | Creates the three tables. **Drops and rebuilds them**, so running it again wipes everything. |
+| `003-seed-events.sql` | Loads the 20 events from the Google Sheet and removes the example event. Adds the `format` column and the `Partner Event` type. Seeds the 15-item checklist for upcoming events only — past events get recap figures instead. |
+| `002-require-auth.sql` | Revokes anonymous access. Run it **last**, and only after the team has been invited. |
+
+Numbered out of order on purpose: seed the data while access is still open, then close it.
 
 ## Who can get in
 

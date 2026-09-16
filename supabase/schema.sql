@@ -17,7 +17,8 @@ create table events (
   event_type             text not null default 'OCP Event'
                            check (event_type in ('Private Party','Pop-Up','Community Event',
                                                  'Brand Collab','OCP Event','Pilates in the Park',
-                                                 'Workshop','Other')),
+                                                 'Workshop','Partner Event','Other')),
+  format                 text default '',   -- what happens: Reformer Class, Mat Class, ...
   location               text default '',
   event_date             date,
   date_status            text not null default 'Tentative'

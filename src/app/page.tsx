@@ -196,6 +196,7 @@ export default function Dashboard() {
                     <span className="text-[15.5px] font-semibold">{ev.name}</span>
                     <span className="mt-0.5 block text-[12.5px] text-ink-45">
                       {ev.event_type}
+                      {ev.format ? ` · ${ev.format}` : ""}
                       {ev.location ? ` · ${ev.location}` : ""}
                     </span>
                   </div>
