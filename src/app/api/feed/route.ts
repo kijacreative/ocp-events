@@ -14,27 +14,28 @@ import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
-const ALLOWED_ORIGINS = [
-  "https://hq.oakcliffpilates.com",
-  "https://events.oakcliffpilates.com",
-];
-
-function corsHeaders(origin: string | null) {
-  const headers: Record<string, string> = {
+/**
+ * Open to any origin, deliberately.
+ *
+ * This endpoint needs no credentials, so anyone can already read it with
+ * curl. Restricting the origin would only stop browser JavaScript on other
+ * sites while protecting nothing — and it would quietly break Trainer HQ if
+ * it ever fetched from the browser, or a future page on the marketing site.
+ * What keeps this safe is the column list in the event_feed view, not who is
+ * allowed to ask.
+ */
+function corsHeaders() {
+  return {
+    "Access-Control-Allow-Origin": "*",
     "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=600",
-  };
-  if (origin && ALLOWED_ORIGINS.includes(origin)) {
-    headers["Access-Control-Allow-Origin"] = origin;
-    headers["Vary"] = "Origin";
-  }
-  return headers;
+  } as Record<string, string>;
 }
 
-export async function OPTIONS(request: Request) {
+export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
-      ...corsHeaders(request.headers.get("origin")),
+      ...corsHeaders(),
       "Access-Control-Allow-Methods": "GET, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
     },
@@ -51,8 +52,7 @@ function clock(value: string | null): string {
   return `${hour}:${m} ${suffix}`;
 }
 
-export async function GET(request: Request) {
-  const origin = request.headers.get("origin");
+export async function GET() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key =
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
@@ -61,7 +61,7 @@ export async function GET(request: Request) {
   if (!url || !key) {
     return NextResponse.json(
       { configured: false, events: [], generated: new Date().toISOString() },
-      { status: 200, headers: corsHeaders(origin) }
+      { status: 200, headers: corsHeaders() }
     );
   }
 
@@ -77,7 +77,7 @@ export async function GET(request: Request) {
     // reading that the feed is down.
     return NextResponse.json(
       { configured: true, error: error.message, events: [], generated: new Date().toISOString() },
-      { status: 502, headers: corsHeaders(origin) }
+      { status: 502, headers: corsHeaders() }
     );
   }
 
@@ -101,6 +101,6 @@ export async function GET(request: Request) {
 
   return NextResponse.json(
     { configured: true, events, generated: new Date().toISOString() },
-    { status: 200, headers: corsHeaders(origin) }
+    { status: 200, headers: corsHeaders() }
   );
 }

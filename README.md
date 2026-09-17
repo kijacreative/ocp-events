@@ -109,8 +109,12 @@ view alone — the tables stay closed. A mistake in the route cannot widen what 
 from the workbook, so point its `EVENTS_FEED_URL` environment variable at the URL above and
 redeploy. No code change there.
 
-Cross-origin requests are allowed from `hq.oakcliffpilates.com` only. Responses are cached for
-a minute in the browser and five at the edge.
+The endpoint is public and needs no key — HQ has no sign-in, so it has nothing to authenticate
+with. Any origin may read it, which costs nothing: a credential-free URL is already readable by
+anyone with curl, so an origin allow-list would block browser JavaScript while stopping no one.
+What keeps this safe is the column list in the `event_feed` view.
+
+Responses are cached for a minute in the browser and five at the edge.
 
 ## The SQL files
 
