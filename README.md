@@ -85,6 +85,33 @@ npm run dev                  # http://localhost:3000
 
 ---
 
+## The events feed
+
+`/api/feed` serves upcoming and past events as JSON for Trainer HQ
+(hq.oakcliffpilates.com), which has no sign-in of its own.
+
+```
+https://events.oakcliffpilates.com/api/feed
+```
+
+Each event carries name, date, start and end time, location, format, type, price, capacity,
+description, and a `url` back to its page here.
+
+**What it deliberately leaves out:** pay rates and the whole `event_staff` table, revenue,
+leads, memberships converted, recap notes, goals, and the assets folder. HQ is reachable by
+anyone with the link, so the feed is limited to what a trainer needs to know.
+
+That limit is enforced in the database, not just in this route. `supabase/005-event-feed.sql`
+creates an `event_feed` view with only the safe columns and grants the anon role access to that
+view alone — the tables stay closed. A mistake in the route cannot widen what it returns.
+
+**Wiring it into HQ.** The response matches the shape HQ's `api/hq/events.js` already expects
+from the workbook, so point its `EVENTS_FEED_URL` environment variable at the URL above and
+redeploy. No code change there.
+
+Cross-origin requests are allowed from `hq.oakcliffpilates.com` only. Responses are cached for
+a minute in the browser and five at the edge.
+
 ## The SQL files
 
 Run them in order. Each is safe to re-run except where noted.
