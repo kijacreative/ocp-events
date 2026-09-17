@@ -95,14 +95,29 @@ export default function Dashboard() {
   }
 
   if (state === "error") {
+    // The three failures that actually happen, each with the fix that applies.
+    const token = /jwt|issued at future|token is expired|invalid claim/i.test(message);
+    const missingTable = /schema cache|does not exist/i.test(message);
+    const denied = /permission denied|not authorized/i.test(message);
+
     return (
       <div className="pt-20">
-        <h1 className="display text-[36px]">Couldn&apos;t reach the database</h1>
+        <h1 className="display text-[36px]">
+          {token ? "Your session needs a refresh" : "Couldn't reach the database"}
+        </h1>
         <p className="mt-3 text-[14px] text-flare">{message}</p>
         <p className="mt-2 max-w-[54ch] text-[14px] text-ink-70">
-          Usually this means the schema hasn&apos;t been run yet, or the anon key is from a
-          different project.
+          {token
+            ? "This one is harmless — the sign-in token was issued a moment out of step with the database clock. Reloading usually settles it; signing out and back in always does."
+            : missingTable
+              ? "The database is reachable but the tables are missing. Run supabase/schema.sql, then 003-seed-events.sql."
+              : denied
+                ? "You're signed in but the database refused the request. Check that 002-require-auth.sql ran and that your account is still invited."
+                : "Check that the Supabase keys in Vercel point at the right project, then redeploy."}
         </p>
+        <button className="btn btn-solid mt-6" onClick={() => window.location.reload()}>
+          Reload
+        </button>
       </div>
     );
   }

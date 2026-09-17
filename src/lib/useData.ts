@@ -6,6 +6,20 @@ import type { DeliverableRow, EventRow, StaffRow } from "./types";
 
 export type LoadState = "loading" | "ready" | "error" | "unconfigured";
 
+/**
+ * True for errors that a fresh token fixes.
+ *
+ * Supabase mints the access token on its auth server and validates it on the
+ * database, and the two clocks can disagree by a fraction of a second. A token
+ * whose "issued at" lands a moment ahead of the database's clock is rejected
+ * outright, which strands a signed-in person on an error page seconds after a
+ * successful sign-in. Asking for a new token clears it.
+ */
+function isStaleTokenError(message: string | undefined): boolean {
+  if (!message) return false;
+  return /jwt|issued at future|token is expired|invalid claim/i.test(message);
+}
+
 /** All events plus their deliverables. Refetches when the tab regains focus,
  *  so a second person's edits show up without a manual reload. */
 export function useAllEvents() {
@@ -14,16 +28,27 @@ export function useAllEvents() {
   const [state, setState] = useState<LoadState>(isConfigured ? "loading" : "unconfigured");
   const [message, setMessage] = useState<string>("");
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (retried = false) => {
     const sb = getSupabase();
     if (!sb) {
       setState("unconfigured");
       return;
     }
-    const [ev, dl] = await Promise.all([
-      sb.from("events").select("*").eq("archived", false).order("event_date", { ascending: true }),
-      sb.from("deliverables").select("*").order("sort_order", { ascending: true }),
-    ]);
+    const fetchBoth = () =>
+      Promise.all([
+        sb.from("events").select("*").eq("archived", false).order("event_date", { ascending: true }),
+        sb.from("deliverables").select("*").order("sort_order", { ascending: true }),
+      ]);
+
+    let [ev, dl] = await fetchBoth();
+
+    // A token the database won't accept yet: get a new one and try once more.
+    const problem = ev.error?.message || dl.error?.message;
+    if (retried !== true && isStaleTokenError(problem)) {
+      await sb.auth.refreshSession();
+      [ev, dl] = await fetchBoth();
+    }
+
     if (ev.error || dl.error) {
       setMessage(ev.error?.message || dl.error?.message || "Unknown error");
       setState("error");
@@ -69,11 +94,21 @@ export function useEvent(id: string) {
       setState("unconfigured");
       return;
     }
-    const [ev, st, dl] = await Promise.all([
-      sb.from("events").select("*").eq("id", id).maybeSingle(),
-      sb.from("event_staff").select("*").eq("event_id", id).order("sort_order"),
-      sb.from("deliverables").select("*").eq("event_id", id).order("sort_order"),
-    ]);
+    const fetchAll = () =>
+      Promise.all([
+        sb.from("events").select("*").eq("id", id).maybeSingle(),
+        sb.from("event_staff").select("*").eq("event_id", id).order("sort_order"),
+        sb.from("deliverables").select("*").eq("event_id", id).order("sort_order"),
+      ]);
+
+    let [ev, st, dl] = await fetchAll();
+
+    const problem = ev.error?.message || st.error?.message || dl.error?.message;
+    if (isStaleTokenError(problem)) {
+      await sb.auth.refreshSession();
+      [ev, st, dl] = await fetchAll();
+    }
+
     if (ev.error || st.error || dl.error) {
       setMessage(ev.error?.message || st.error?.message || dl.error?.message || "Unknown error");
       setState("error");
